@@ -1,0 +1,7 @@
+name: uniquipy_dev
+channels:
+  - conda-forge
+dependencies:
+  - pip=22.2.2
+  - python=3.8.12
+    
