@@ -1,32 +1,50 @@
-﻿from dedupFuncs import *
+﻿'''
+ macro functions to make use of depulication functions provided
+ in dedup_funcs
 
+'''
+from uniquipy.dedup_funcs import (output_records, read_records, uniqify)
 
+def run_dedup(file_name):
+    '''
+    Depulicate a file of journal articles.
+    All results are written to file.
 
-def run_dedup(fileName):
-    print 'Reading records...'
-    all_records = read_records(fileName)
+    Params:
+    ------
+    file_name: str
+        File name and path containing records 
+    
+    Returns:
+    -------
+    DedepResultsContainer
 
-    print 'Excluding duplicate titles...'
+    '''
+    print('Reading records...')
+    all_records = read_records(file_name)
+
+    print('Excluding duplicate titles...')
     edited_records = uniqify(all_records, lambda x: x[len(x)-1:][0])
 
-    print 'Flagging likely duplicates...'
+    print('Flagging likely duplicates...')
     likely_dups = likely(edited_records.edit)
 
-    print 'Outputting results...'
+    print('Outputting results...')
     output_records(fileName, 'edit', edited_records.edit)
     output_records(fileName, 'dups', edited_records.duplicates)
     output_records(fileName, 'likely_dups', likely_dups)
 
-    print 'deduplication complete'
-    print 'duplicates removed: ', len(edited_records.duplicates)
-    print 'Possible duplicates: ', len(likely_dups)
+    print('deduplication complete')
+    print(f'duplicates removed: {len(edited_records.duplicates)}')
+    print(f'Possible duplicates: {len(likely_dups)}')
     
     return DedupResultContainer(all_records,  edited_records, likely_dups)
     
-    
-
 
 class DedupResultContainer():
+    '''
+    Container class for deduplication results
+    '''
     def __init__(self,  found,  edited,  likely):
         """
         Constructor
