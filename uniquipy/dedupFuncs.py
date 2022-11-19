@@ -1,55 +1,98 @@
-#--------------------------------------------------------------------
-#
-#   Module:         dedupFuncs
-#   Description:    Simple script for removing duplicate EndNote entries
-#   Author:         T.Monks
-#   Python ver:     2.7.2
-#
-#   Logic:          1. Strip punctuation/whitespace from titles
-#                   2. Remove all matching titles (pass 1)
-#                   3. Flag all entries with matching:
-#                       a. author surnames (concatonated, lowercase, no whitespace)
-#                       b. Year of pub
-#                       c. Volumn of pub
-#                       d. journal title (no puct/whitespace)
-#--------------------------------------------------------------------
+'''
+--------------------------------------------------------------------
+
+   Module:         dedupFuncs
+   Description:    Simple script for removing duplicate EndNote entries
+   Author:         T.Monks
+   Python ver:     3.8.12
+
+   Logic:          1. Strip punctuation/whitespace from titles
+                   2. Remove all matching titles (pass 1)
+                   3. Flag all entries with matching:
+                       a. author surnames (concatonated, lowercase, no whitespace)
+                       b. Year of pub
+                       c. Volumn of pub
+                       d. journal title (no puct/whitespace)
+--------------------------------------------------------------------
+'''
 
 import sys
-sys.path.append(r"C:\Python27\Lib\string")
+#sys.path.append(r"C:\Python27\Lib\string")
 
 
 class Results:
+    '''
+    Container class for results
+    Lists of duplicate records and edited dataset
+    '''
     def __init__(self):
         self.duplicates = []
         self.edit = []
 
        
 def remove_punct(title):
+    '''
+    Strip out all punctuation and white space
+    from the journal article title
+
+    Param:
+    ------
+    title: str
+        The journal article title
+
+    Returns:
+    -------
+    str
+
+    '''
     s = title.translate(string.maketrans("",""), string.punctuation)
     return s.replace(' ', '')
 
 
-def uniqify(seq, idfun=None): 
-   # order preserving
-   if idfun is None:
-       def idfun(x): return x
-   seen = {}
-   unique = Results()
-   
-   for item in seq:
-       marker = idfun(item)
-       if marker in seen:
-           unique.duplicates.append(item)
-           continue
-       seen[marker] = 1
-       unique.edit.append(item)
+def uniqify(seq, idfun=None):
+    '''
+    Find duplicate references and return
+    results
 
-   return unique
+    Params:
+    -------
+    seq: array-like
+        List of journal articles
+
+    idfun: ?
+
+    Returns:
+    --------
+    Results object
+
+    '''
+    # order preserving
+    if idfun is None:
+        def idfun(x): return x
+    seen = {}
+    unique = Results()
+    
+    for item in seq:
+        marker = idfun(item)
+        if marker in seen:
+            unique.duplicates.append(item)
+            continue
+        seen[marker] = 1
+        unique.edit.append(item)
+
+    return unique
 
 
 
 
 def likely(records):
+    '''
+    Find likely duplicates
+
+    Returns:
+    --------
+    List
+    '''
     found = set()
     likely_dups = []
     
@@ -63,16 +106,30 @@ def likely(records):
     return likely_dups
             
 
-def read_records(fileName):
+def read_records(file_name):
+    '''
+    Read all of the journal articles from file
+
+    Params:
+    -------
+    file_name: str
+        Path and filename contained records to import
+
+    Returns:
+    --------
+    List
+
+    '''
 
     try:
-        f = open(fileName, 'r')
+        f = open(file_name, 'r')
     except IOError as e:
         try:
-            f = open(fileName + '.txt', 'r')
+            f = open(file_name + '.txt', 'r')
 
         except IOError as e:
-            print "Error accessing file.  Please make sure that filename is correct."
+            print("Error accessing file.  " \
+                  + "Please make sure that filename is correct.")
             sys.exit()
 
     curr_record = []
@@ -123,15 +180,14 @@ def read_records(fileName):
     return all_records
 
 
-def output_records(fileName, postFix, all_records):
-    newFileName = fileName + '_' + postFix + '.txt'
-    f = open(newFileName, 'w')
+def output_records(file_name, postfix, all_records):
+    new_file_name = file_name + '_' + postfix + '.txt'
+    f = open(new_file_name, 'w')
 
     for record in all_records:
         for line in record[0:len(record)-2]:
             f.write(str(line))
             
-
     f.close()    
     
 
